@@ -126,7 +126,7 @@ try:
     if st.session_state.has_y_int:
         try:
             create_graph_w_y_int()
-        except SyntaxError, TypeError:
+        except (SyntaxError, TypeError):
             st.error("please enter a valid y-int")
     else:
         create_graph_wo_y_int()
