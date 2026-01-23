@@ -123,9 +123,6 @@ def create_graph_wo_y_int():
     ax.legend()
     st.pyplot(fig)
 try:
-
-    create_average_line(y_int, df["x"].to_numpy(), df["y"].to_numpy())
-
     if st.session_state.has_y_int:
         try:
             create_graph_w_y_int()
@@ -133,5 +130,5 @@ try:
             st.error("please enter a valid y-int")
     else:
         create_graph_wo_y_int()
-except np.linalg.LinAlgError:
+except:
     st.error("please ensure you have filled out all the squares on the table")
