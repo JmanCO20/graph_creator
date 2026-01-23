@@ -106,15 +106,15 @@ def create_graph_wo_y_int():
     ax.scatter(x=x, y=lower_bound, color="grey", alpha=0.8)
 
     half_of_upper = len(upper_bound)//2
-    half_of_lower = (len(lower_bound) - half_of_upper)
+    half_of_lower = len(lower_bound) - half_of_upper
 
-    points_for_upper_bound = pd.concat([upper_bound[:half_of_upper], lower_bound[half_of_upper:half_of_lower + 1]])
+    points_for_upper_bound = pd.concat([upper_bound[:half_of_upper], lower_bound[half_of_upper:half_of_lower + half_of_upper + 1]])
     points_for_upper_bound = points_for_upper_bound.to_numpy()
 
     x_line, y_line, m, b = create_average_line(y_int, x, points_for_upper_bound)
     ax.plot(x_line, y_line, color="orange", label=f"y = {m:.3g}x + {b:.3g}")
 
-    points_for_lower_bound = pd.concat([lower_bound[:half_of_lower], upper_bound[half_of_lower:half_of_upper + half_of_lower]], ignore_index=True)
+    points_for_lower_bound = pd.concat([lower_bound[:half_of_lower], upper_bound[half_of_lower:half_of_upper + half_of_lower + 1]], ignore_index=True)
     points_for_lower_bound = points_for_lower_bound.to_numpy()
 
     x_line, y_line, m, b = create_average_line(y_int, x, points_for_lower_bound)
@@ -123,7 +123,7 @@ def create_graph_wo_y_int():
     ax.legend()
     st.pyplot(fig)
 try:
-    if not len(df["x"])> 2 and not len(df["y"]) > 2:
+    if not len(df["x"]) >= 2 and not len(df["y"]) >= 2:
         raise ValueError
 
     if st.session_state.has_y_int:
