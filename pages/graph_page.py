@@ -123,6 +123,9 @@ def create_graph_wo_y_int():
     ax.legend()
     st.pyplot(fig)
 try:
+
+    create_average_line(y_int, df["x"].to_numpy(), df["y"].to_numpy())
+
     if st.session_state.has_y_int:
         try:
             create_graph_w_y_int()
