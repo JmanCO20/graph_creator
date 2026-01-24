@@ -1,2 +1,2 @@
 # graph_creator
-creates a grpah from data with error bars
+creates a graph from data with error bars
