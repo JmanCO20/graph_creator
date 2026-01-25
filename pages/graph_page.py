@@ -9,6 +9,7 @@ title = st.session_state.title
 x_label = st.session_state.x_label
 y_label = st.session_state.y_label
 has_y_int = st.session_state.has_y_int
+graph_type = st.session_state.graph_type
 
 def create_average_line(yint: int, x, y):
     if has_y_int:
@@ -84,8 +85,8 @@ def create_graph_wo_y_int():
     y = df["y"].to_numpy()
 
     ax.scatter(x=x, y=y, color="blue", alpha=0.8)
-    ax.errorbar(xerr=list(df["x uncertainty"]),
-                yerr=list(df["y uncertainty"]),
+    ax.errorbar(xerr=df["x uncertainty"],
+                yerr=df["y uncertainty"],
                 x=x,
                 y=y,
                 fmt="none",
@@ -122,19 +123,38 @@ def create_graph_wo_y_int():
 
     ax.legend()
     st.pyplot(fig)
+
+def create_bar_graph():
+    fig, ax = plt.subplots()
+
+    ax.set_title(title)
+    ax.set_xlabel(x_label)
+    ax.set_ylabel(y_label)
+
+    x = df["x"].to_numpy()
+    y = df["y"].to_numpy()
+
+    ax.bar(x=x, height=y, color="blue", alpha=0.8)
+    ax.errorbar(x=x, y=y, xerr=None, yerr=df["y uncertainty"], fmt="none", linestyle="none", color="grey", alpha=0.5)
+
+    st.pyplot(fig)
+
 try:
     if not len(df["x"]) >= 2 and not len(df["y"]) >= 2:
         raise ValueError
 
-    if st.session_state.has_y_int:
+    if st.session_state.has_y_int and graph_type == "line graph":
         try:
             create_graph_w_y_int()
         except (SyntaxError, TypeError):
             st.error("please enter a valid y-int")
-    else:
+    elif graph_type == "line graph":
         create_graph_wo_y_int()
+    else:
+        create_bar_graph()
 
 except ValueError:
     st.error("please ensure you have at least 2 data points")
-except Exception:
+except Exception as e:
+    print(e)
     st.error("please ensure you have filled out all the squares on the table")
