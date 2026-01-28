@@ -124,6 +124,7 @@ def create_graph_wo_y_int():
     ax.legend()
     st.pyplot(fig)
 
+
 def create_bar_graph():
     fig, ax = plt.subplots()
 
@@ -138,6 +139,7 @@ def create_bar_graph():
     ax.errorbar(x=x, y=y, xerr=None, yerr=df["y uncertainty"], fmt="none", linestyle="none", color="grey", alpha=0.5)
 
     st.pyplot(fig)
+
 
 try:
     if not len(df["x"]) >= 2 and not len(df["y"]) >= 2:
