@@ -1,7 +1,7 @@
 import uuid
 from fastapi_users import schemas
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 import datetime
 import pandas as pd
 
@@ -26,7 +26,7 @@ class GraphReturn(BaseModel):
 class GraphParams(BaseModel):
     title: str
     graph_type: str
-    df: pd.DataFrame
+    df: list
     x_label: str
     y_label: str
     has_y_int: bool = False

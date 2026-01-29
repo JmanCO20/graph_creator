@@ -12,6 +12,8 @@ from .schema import UserUpdate, UserCreate, UserRead, GraphReturn, GraphParams
 
 from contextlib import asynccontextmanager
 
+import pandas as pd
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await create_db_and_tables()
@@ -38,19 +40,19 @@ app.include_router(router, prefix="/users", tags=["users"])
 
 app.include_router(fastapi_users.get_users_router(UserRead, UserUpdate), prefix="/users", tags=["users"])
 @app.post("/upload")
-async def upload_graph(data: GraphParams,
-                        user: User = Depends(current_active_user),
+async def upload_graph(params: GraphParams,
+                       user: User = Depends(current_active_user),
                        session: AsyncSession = Depends(get_async_sessionmaker)) -> GraphReturn:
     graph = Graph(
         user_id=user.id,
-        title=data.title,
-        graph_type=data.graph_type,
+        title=params.title,
+        graph_type=params.graph_type,
         data={
-            "df": data.df,
-            "x_label": data.x_label,
-            "y_label": data.y_label,
-            "has_y_int": data.has_y_int,
-            "y_int": data.y_int
+            "df": params.df,
+            "x_label": params.x_label,
+            "y_label": params.y_label,
+            "has_y_int": params.has_y_int,
+            "y_int": params.y_int
         }
     )
 
