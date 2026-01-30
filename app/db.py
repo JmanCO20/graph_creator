@@ -13,13 +13,20 @@ from fastapi import Depends
 from collections.abc import AsyncGenerator
 
 import datetime
+import ssl
+from dotenv import load_dotenv
+import os
 
-DATABASE_URL = "sqlite+aiosqlite:///./app.db"
+load_dotenv()
+DATABASE_URL = os.getenv("DB_URL")
+
+ssl_ctx = ssl.create_default_context()
 
 class Base(DeclarativeBase):
     pass
 
 class User(SQLAlchemyBaseUserTableUUID, Base):
+    __tablename__ = "user"
     graphs = relationship("Graph", back_populates="user")
 
 class Graph(Base):
@@ -34,7 +41,7 @@ class Graph(Base):
 
     user = relationship("User", back_populates="graphs")
 
-engine = create_async_engine(DATABASE_URL)
+engine = create_async_engine(DATABASE_URL, connect_args={"ssl": ssl_ctx})
 async_session_maker = async_sessionmaker(engine, expire_on_commit=False)
 
 async def create_db_and_tables():
