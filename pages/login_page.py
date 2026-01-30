@@ -1,5 +1,15 @@
 import streamlit as st
 import requests
+from dotenv import load_dotenv
+import os
+
+if "user" not in st.session_state:
+    st.session_state.user = None
+
+load_dotenv()
+API_URL = os.getenv("API_URL")
+
+session = requests.Session()
 
 st.title("Login Page")
 
@@ -11,11 +21,28 @@ if email and password:
 
     with col1:
         if st.button("Login", type="primary", width="stretch"):
-            pass
+            response = session.post(API_URL + "/auth/jwt/login", data={"username": email, "password": password})
 
+            if response.status_code == 204:
+                st.success("successfully logged in")
+
+                user_response = session.get(API_URL + "/users/me")
+
+                if user_response.status_code == 200:
+                    st.session_state.user = user_response.json()
+                    st.rerun()
+            else:
+                st.error(response.text)
     with col2:
         if st.button("Register", type="secondary", width="stretch"):
-            pass
+            response = session.post(API_URL + "/auth/register", json={"email": email, "password": password})
+
+            if response.status_code == 201:
+                st.success("successfully registered")
+            else:
+                st.error(response.text)
 else:
     st.error("please enter both email and password")
 
+if st.session_state.user:
+    st.sidebar.header(f"Hello {st.session_state.user['id']}")
