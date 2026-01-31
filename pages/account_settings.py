@@ -37,6 +37,7 @@ with col3:
         if response.status_code == 204:
             st.success("successfully deleted account")
             st.session_state.user = None
+            del st.session_state["session"]
             st.rerun()
         else:
             st.error(response.text)
