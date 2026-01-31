@@ -83,7 +83,7 @@ async def get_feed(session: AsyncSession = Depends(get_async_sessionmaker),):
     return graph_data
 
 
-@app.get("/users/graph")
+@app.get("/user/graphs")
 async def get_user_graph(user: User = Depends(current_active_user),
                    session: AsyncSession = Depends(get_async_sessionmaker)):
 
