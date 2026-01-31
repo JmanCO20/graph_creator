@@ -1,4 +1,3 @@
-
 from sqlalchemy.orm import DeclarativeBase, mapped_column, Mapped, relationship
 from sqlalchemy import ForeignKey, String, JSON, DateTime
 
@@ -14,11 +13,9 @@ from collections.abc import AsyncGenerator
 
 import datetime
 import ssl
-from dotenv import load_dotenv
 import os
 
-load_dotenv()
-DATABASE_URL = os.getenv("DB_URL")
+DATABASE_URL = os.environ.get("DB_URL")
 
 ssl_ctx = ssl.create_default_context()
 
