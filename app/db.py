@@ -1,5 +1,5 @@
-from matplotlib.figure import Figure
-from sqlalchemy.orm import DeclarativeBase, MappedColumn, Mapped, relationship
+
+from sqlalchemy.orm import DeclarativeBase, mapped_column, Mapped, relationship
 from sqlalchemy import ForeignKey, String, JSON, DateTime
 
 from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession, create_async_engine
@@ -26,20 +26,20 @@ class Base(DeclarativeBase):
     pass
 
 class User(SQLAlchemyBaseUserTableUUID, Base):
-    __tablename__ = "user"
-    graphs = relationship("Graph", back_populates="user")
+    __tablename__ = "users"
+    graphs = relationship("Graph", back_populates="users")
 
 class Graph(Base):
     __tablename__ = "graphs"
 
-    id : Mapped[uuid.UUID] = MappedColumn(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id : Mapped[uuid.UUID] = MappedColumn(UUID(as_uuid=True), ForeignKey("user.id"), nullable=False)
-    title : Mapped[str] = MappedColumn(String(255), nullable=False)
-    graph_type : Mapped[str] = MappedColumn(String(255), nullable=False)
-    data : Mapped[dict] = MappedColumn(JSON, nullable=False)
-    created_at : Mapped[datetime.datetime] = MappedColumn(DateTime, default=datetime.datetime.utcnow)
+    id : Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id : Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    title : Mapped[str] = mapped_column(String(255), nullable=False)
+    graph_type : Mapped[str] = mapped_column(String(255), nullable=False)
+    data : Mapped[dict] = mapped_column(JSON, nullable=False)
+    created_at : Mapped[datetime.datetime] = mapped_column(DateTime, default=datetime.datetime.utcnow)
 
-    user = relationship("User", back_populates="graphs")
+    users = relationship("User", back_populates="graphs")
 
 engine = create_async_engine(DATABASE_URL, connect_args={"ssl": ssl_ctx})
 async_session_maker = async_sessionmaker(engine, expire_on_commit=False)

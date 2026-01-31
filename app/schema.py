@@ -24,9 +24,10 @@ class GraphReturn(BaseModel):
     created_at: datetime.datetime
 
 class GraphParams(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
     title: str
     graph_type: str
-    df: list
+    df: pd.DataFrame
     x_label: str
     y_label: str
     has_y_int: bool = False
