@@ -1,15 +1,11 @@
 import streamlit as st
-import requests
 from dotenv import load_dotenv
 import os
-
-if "user" not in st.session_state:
-    st.session_state.user = None
 
 load_dotenv()
 API_URL = os.getenv("API_URL")
 
-session = requests.Session()
+session = st.session_state.session
 
 st.title("Login Page")
 
@@ -31,6 +27,8 @@ if email and password:
                 if user_response.status_code == 200:
                     st.session_state.user = user_response.json()
                     st.rerun()
+                else:
+                    st.error(user_response.text)
             else:
                 st.error(response.text)
     with col2:
@@ -43,6 +41,3 @@ if email and password:
                 st.error(response.text)
 else:
     st.error("please enter both email and password")
-
-if st.session_state.user:
-    st.sidebar.header(f"Hello {st.session_state.user['id']}")

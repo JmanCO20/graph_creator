@@ -1,8 +1,16 @@
 import streamlit as st
 import pandas as pd
+from pages.graph_page import create_graph_w_y_int, create_bar_graph, create_graph_wo_y_int
+from dotenv import load_dotenv
+import os
+from fastapi import HTTPException
 
-if "df" not in st.session_state:
-    st.session_state.df = pd.DataFrame(columns=["x", "x uncertainty", "y", "y uncertainty"])
+load_dotenv()
+API_URL = os.getenv("API_URL")
+
+session = st.session_state.session
+
+st.title("Table Page")
 
 def table_view_for_graphs(column_type: type):
     if column_type == float:
@@ -26,23 +34,6 @@ def table_view_for_graphs(column_type: type):
 
 
 def form_questions():
-    if "y_int" not in st.session_state:
-        st.session_state.y_int = None
-
-    if "has_y_int" not in st.session_state:
-        st.session_state.has_y_int = False
-
-    if "title" not in st.session_state:
-        st.session_state.title = "Title"
-
-    if "y_label" not in st.session_state:
-        st.session_state.y_label = "y_axis"
-
-    if "x_label" not in st.session_state:
-        st.session_state.x_label = "x_axis"
-
-    if "graph_type" not in st.session_state:
-        st.session_state.graph_type = None
     try:
         graph_type = st.multiselect(label="select if you are making a bar graph or line graph", options=["line graph", "bar graph"], max_selections=1, default=st.session_state.graph_type)
 
@@ -84,7 +75,51 @@ def form_questions():
             st.session_state.graph_type = graph_type[0]
             st.switch_page("pages/graph_page.py")
 
+def create_graph():
+    if has_y_int and graph_type == "line graph":
+        try:
+            create_graph_w_y_int(df=df, title=title, x_label=x_label, y_label=y_label, y_int=y_int, has_y_int=has_y_int)
+        except (SyntaxError, TypeError) as e:
+            st.error(e)
+            st.error("please enter a valid y-int")
+    elif graph_type == "line graph":
+        create_graph_wo_y_int(title=title, x_label=x_label, y_label=y_label, df=df, has_y_int=has_y_int)
+    else:
+        create_bar_graph(title=title, x_label=x_label, y_label=y_label, df=df)
 
 form_questions()
+
+try:
+    if not st.session_state.user:
+        raise AssertionError
+    st.header("Previous Graphs")
+
+    response = session.get(API_URL + "/user/graphs")
+    if response.status_code == 200:
+        graphs = response.json()
+    else:
+        st.error(response.text)
+        raise HTTPException(response.status_code)
+
+    container = st.container(border=True)
+
+    with container:
+        for graph in graphs:
+            title = graph["title"]
+            graph_type = graph["graph_type"]
+            x_label = graph["data"]["x_label"]
+            y_label = graph["data"]["y_label"]
+            has_y_int = graph["data"]["has_y_int"]
+            y_int = graph["data"]["y_int"]
+            df = pd.DataFrame(graph["data"]["df"])
+            st.write(f"Graph Id: {graph["id"]}")
+            create_graph()
+
+
+except AssertionError:
+    pass
+except HTTPException:
+    st.error("could not retrieve graphs")
+
 
 
