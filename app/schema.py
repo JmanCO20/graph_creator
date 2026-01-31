@@ -3,7 +3,7 @@ from fastapi_users import schemas
 
 from pydantic import BaseModel, ConfigDict
 import datetime
-import pandas as pd
+from typing import Any
 
 class UserRead(schemas.BaseUser[uuid.UUID]):
     pass
@@ -27,8 +27,8 @@ class GraphParams(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
     title: str
     graph_type: str
-    df: pd.DataFrame
+    df: list[dict[str, Any]]
     x_label: str
     y_label: str
     has_y_int: bool = False
-    y_int: float = None
+    y_int: float | None = None
