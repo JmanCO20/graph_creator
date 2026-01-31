@@ -27,7 +27,7 @@ class Base(DeclarativeBase):
 
 class User(SQLAlchemyBaseUserTableUUID, Base):
     __tablename__ = "users"
-    graphs = relationship("Graph", back_populates="users")
+    graphs = relationship("Graph", back_populates="user")
 
 class Graph(Base):
     __tablename__ = "graphs"
@@ -39,7 +39,7 @@ class Graph(Base):
     data : Mapped[dict] = mapped_column(JSON, nullable=False)
     created_at : Mapped[datetime.datetime] = mapped_column(DateTime, default=datetime.datetime.utcnow)
 
-    users = relationship("User", back_populates="graphs")
+    user = relationship("User", back_populates="graphs")
 
 engine = create_async_engine(DATABASE_URL, connect_args={"ssl": ssl_ctx})
 async_session_maker = async_sessionmaker(engine, expire_on_commit=False)
