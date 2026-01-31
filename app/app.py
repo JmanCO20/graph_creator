@@ -12,7 +12,7 @@ from .schema import UserUpdate, UserCreate, UserRead, GraphReturn, GraphParams
 
 from contextlib import asynccontextmanager
 
-import pandas as pd
+import uuid
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -101,3 +101,11 @@ async def get_user_graph(user: User = Depends(current_active_user),
         })
 
     return graph_data
+
+
+@app.delete("/graph/{graph_id}")
+async def delete_graph(graph_id: uuid.UUID,
+                 session: AsyncSession = Depends(get_async_sessionmaker),
+                 ):
+    await session.execute(delete(Graph).where(Graph.id == graph_id))
+    await session.commit()
