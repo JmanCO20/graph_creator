@@ -34,7 +34,7 @@ with col2:
 with col3:
     if st.button("Delete Account"):
         response = st.session_state.session.delete(f"{API_URL}/users/me")
-        if response.status_code == 200:
+        if response.status_code == 204:
             st.success("successfully deleted account")
             st.session_state.user = None
             st.rerun()
