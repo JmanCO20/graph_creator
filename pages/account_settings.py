@@ -17,7 +17,7 @@ with col1:
         if response.status_code == 204:
             st.success("successfully logged out")
             st.session_state.user = None
-            st.session_state.session = None
+            st.session_state.session.remove()
             st.rerun()
         else:
             st.error(response.text)
