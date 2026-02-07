@@ -6,8 +6,9 @@ from fastapi_users import BaseUserManager, UUIDIDMixin, FastAPIUsers
 from fastapi import Depends
 
 from .db import User, get_user_db
+import os
 
-SECRET = "lsadhjfkljadhsfdsaf"
+SECRET = os.environ.get("SECRET")
 
 cookie_transport = CookieTransport(cookie_max_age=3600)
 

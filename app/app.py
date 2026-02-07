@@ -8,7 +8,7 @@ from .db import Graph, User, create_db_and_tables, get_async_sessionmaker
 
 from .user import fastapi_users, auth_backend, current_active_user, get_user_manager, UserManager
 
-from .schema import UserUpdate, UserCreate, UserRead, GraphReturn, GraphParams
+from .schema import UserUpdate, UserCreate, UserRead, GraphParams
 
 from contextlib import asynccontextmanager
 
@@ -42,17 +42,18 @@ app.include_router(fastapi_users.get_users_router(UserRead, UserUpdate), prefix=
 @app.post("/upload")
 async def upload_graph(params: GraphParams,
                        user: User = Depends(current_active_user),
-                       session: AsyncSession = Depends(get_async_sessionmaker)) -> GraphReturn:
+                       session: AsyncSession = Depends(get_async_sessionmaker)):
     graph = Graph(
         user_id=user.id,
-        title=params.title,
+        title=params.labels["title"],
         graph_type=params.graph_type,
         data={
             "df": params.df,
-            "x_label": params.x_label,
-            "y_label": params.y_label,
-            "has_y_int": params.has_y_int,
-            "y_int": params.y_int
+            "labels": params.labels,
+            "checkboxes": params.checkboxes,
+            "trendlines": params.trendlines,
+            "window_size": params.window_size,
+            "previous_lines": params.previous_lines
         }
     )
 

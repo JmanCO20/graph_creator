@@ -2,7 +2,6 @@ import uuid
 from fastapi_users import schemas
 
 from pydantic import BaseModel, ConfigDict
-import datetime
 from typing import Any
 
 class UserRead(schemas.BaseUser[uuid.UUID]):
@@ -14,21 +13,12 @@ class UserCreate(schemas.BaseUserCreate):
 class UserUpdate(schemas.BaseUserUpdate):
     pass
 
-
-class GraphReturn(BaseModel):
-    id: uuid.UUID
-    user_id: uuid.UUID
-    title: str
-    graph_type: str
-    data: dict
-    created_at: datetime.datetime
-
 class GraphParams(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
-    title: str
+    labels: dict[str, str]
     graph_type: str
     df: list[dict[str, Any]]
-    x_label: str
-    y_label: str
-    has_y_int: bool = False
-    y_int: float | None = None
+    checkboxes: dict[str, bool | float | None]
+    trendlines: dict[str, bool]
+    window_size: dict[str, float]
+    previous_lines: dict[str, list | None]
