@@ -32,7 +32,7 @@ def table_view_for_graphs(column_type: type):
 
 def form_questions():
     try:
-        graph_type = st.multiselect(label="select if you are making a bar graph or line graph", options=["line graph", "bar graph"], max_selections=1, default=st.session_state.graph_type)
+        graph_type = st.multiselect(label="Select if you are making a Bar graph or Line graph", options=["line graph", "bar graph"], max_selections=1, default=st.session_state.graph_type)
 
         if not graph_type:
             raise ValueError
@@ -43,23 +43,23 @@ def form_questions():
 
         data_table = table_view_for_graphs(column_type)
         if graph_type[0] == "line graph":
-            has_y_int = st.checkbox("does your graph have a set y-int", value=st.session_state.checkboxes["has_y_int"])
+            has_y_int = st.checkbox("Does your graph have a set Y Intercept", value=st.session_state.checkboxes["has_y_int"])
             if has_y_int:
-                y_int = st.number_input("enter y-int", value=st.session_state.checkboxes["y_int"])
+                y_int = st.number_input("Enter Y Intercept value", value=st.session_state.checkboxes["y_int"])
             else:
                 y_int = None
 
-            wants_set_window = st.checkbox("Set graph window", value=st.session_state.checkboxes["wants_set_window"])
+            wants_set_window = st.checkbox("Set graph window size", value=st.session_state.checkboxes["wants_set_window"])
             if wants_set_window:
                 col1, col2, col3, col4 = st.columns(4)
                 with col1:
-                    x_min = st.number_input("enter x-min", value=st.session_state.window_size["xmin"])
+                    x_min = st.number_input("Enter X-min", value=st.session_state.window_size["xmin"])
                 with col2:
-                    x_max = st.number_input("enter x-max", value=st.session_state.window_size["xmax"])
+                    x_max = st.number_input("Enter X-max", value=st.session_state.window_size["xmax"])
                 with col3:
-                    y_min = st.number_input("enter y-min", value=st.session_state.window_size["ymin"])
+                    y_min = st.number_input("Enter Y-min", value=st.session_state.window_size["ymin"])
                 with col4:
-                    y_max = st.number_input("enter y-max", value=st.session_state.window_size["ymax"])
+                    y_max = st.number_input("Enter Y-max", value=st.session_state.window_size["ymax"])
 
         else:
             wants_set_window = False
@@ -74,8 +74,8 @@ def form_questions():
                 wants_legend = st.checkbox("Enable legend", value=st.session_state.checkboxes["legend"])
 
             title = st.text_input("Title for graph", value=st.session_state.labels["title"])
-            y_label = st.text_input("y-axis label", value=st.session_state.labels["y_label"])
-            x_label = st.text_input("x-axis label", value=st.session_state.labels["x_label"])
+            y_label = st.text_input("Y-axis label", value=st.session_state.labels["y_label"])
+            x_label = st.text_input("X-axis label", value=st.session_state.labels["x_label"])
 
             if st.form_submit_button("Create Graph"):
                 st.session_state.checkboxes = {"has_y_int": has_y_int, "y_int": y_int, "legend": wants_legend if graph_type[0] == "line graph" else False , "wants_set_window": wants_set_window}
@@ -86,7 +86,7 @@ def form_questions():
                 st.session_state.trendlines = {"upper": wants_upper_trendline, "lower": wants_lower_trendline, "average": wants_average_trendline} if graph_type[0] == "line graph" else {"upper": False, "lower": False, "average": False}
                 st.switch_page("pages/graph_page.py")
     except ValueError:
-        st.error("please select a graph type")
+        st.error("Please select a graph type")
 
 def create_graph():
     if graph_type == "bar graph":
@@ -112,7 +112,7 @@ try:
         st.error(response.text)
         response.raise_for_status()
 
-    container = st.container(border=True)
+    container = st.container(border=True, height=1000)
 
     with container:
         for graph in graphs:
@@ -131,7 +131,7 @@ try:
 except AssertionError:
     pass
 except HTTPException:
-    st.error("could not retrieve graphs")
+    st.error("Could not retrieve graphs")
 
 
 
