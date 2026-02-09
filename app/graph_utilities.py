@@ -11,16 +11,16 @@ def create_average_line(has_y_int, y_int: int, x, y, window_size: dict[str, floa
         else:
             m = np.sum(x * (y - y_int)) / denom
 
-        x_line = np.linspace(0, window_size["xmax"], 300)
+        x_line = np.linspace(0, window_size["xmax"], 200)
         y_line = m * x_line + y_int
         return x_line, y_line, round(m, 2)
     else:
         m, b = np.polyfit(x, y, 1)
-        x_line = np.linspace(0, window_size["xmax"], 300)
+        x_line = np.linspace(0, window_size["xmax"], 200)
         y_line = m * x_line + b
         return x_line, y_line, round(m, 2), round(b, 2)
 
-def creating_trendlines(trendlines: dict[str, bool], checkboxes: dict[str, bool | float], ax: plt.Axes, x, y, upper_bound, lower_bound, window_size: dict[str, float], half_of_upper: int | None=None, half_of_lower: int | None=None):
+def creating_trendlines(trendlines: dict[str, bool], checkboxes: dict[str, bool | float], ax: plt.Axes, x, y, upper_bound, lower_bound, window_size:dict[str, float], half_of_upper: int | None=None, half_of_lower: int | None=None):
     try:
         if not checkboxes["has_y_int"]:
             raise ValueError
@@ -48,15 +48,19 @@ def creating_trendlines(trendlines: dict[str, bool], checkboxes: dict[str, bool 
             ax.plot(x_line, y_line, color="blue", label=f"y = {m:.3g}x + {b:.3g}")
 
         if trendlines["upper"]:
-            points_for_upper_bound = pd.concat([upper_bound[:half_of_upper], lower_bound[half_of_upper:half_of_lower + half_of_upper + 1]])
+            points_for_upper_bound = pd.concat(
+                [upper_bound[:half_of_upper], lower_bound[half_of_upper:half_of_lower + half_of_upper + 1]])
             st.session_state.previous_lines["upper"] = None
             points_for_upper_bound = points_for_upper_bound.to_numpy()
 
-            x_line, y_line, m, b = create_average_line(checkboxes["has_y_int"], checkboxes["y_int"], x, points_for_upper_bound, window_size)
+            x_line, y_line, m, b = create_average_line(checkboxes["has_y_int"], checkboxes["y_int"], x,
+                                                       points_for_upper_bound, window_size)
             ax.plot(x_line, y_line, color="orange", label=f"y = {m:.3g}x + {b:.3g}")
 
         if trendlines["lower"]:
-            points_for_lower_bound = pd.concat( [lower_bound[:half_of_lower], upper_bound[half_of_lower:half_of_upper + half_of_lower + 1]], ignore_index=True)
+            points_for_lower_bound = pd.concat(
+                [lower_bound[:half_of_lower], upper_bound[half_of_lower:half_of_upper + half_of_lower + 1]],
+                ignore_index=True)
             st.session_state.previous_lines["lower"] = None
             points_for_lower_bound = points_for_lower_bound.to_numpy()
 
@@ -106,7 +110,6 @@ def create_graph_w_y_int(df, labels: dict[str, str], checkboxes: dict[str, bool 
                         lower_bound=lower_bound,
                         window_size=window_size
                         )
-
     if checkboxes["wants_set_window"]:
         ax.set_xlim(left=window_size["xmin"], right=window_size["xmax"])
         ax.set_ylim(bottom=window_size["ymin"], top=window_size["ymax"])
