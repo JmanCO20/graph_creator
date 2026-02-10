@@ -20,5 +20,5 @@ class GraphParams(BaseModel):
     df: list[dict[str, Any]]
     checkboxes: dict[str, bool | float | None]
     trendlines: dict[str, bool]
-    window_size: dict[str, float | None]
+    window_size: dict[str, None | float]
     previous_lines: dict[str, list | None]

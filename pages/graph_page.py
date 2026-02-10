@@ -15,7 +15,7 @@ wants_trendlines = st.session_state.trendlines
 window_size = st.session_state.window_size
 
 def save_graph():
-    if st.session_state.save_graph:
+    if st.session_state.save_graph_button:
         data_dict = {
             "labels": labels,
             "graph_type": graph_type,
@@ -53,17 +53,17 @@ def show_graphs():
             try:
                 create_graph_w_y_int(df=dataframe, labels=labels, checkboxes=checkboxes, trendlines=st.session_state.trendlines, window_size=window_size)
                 if st.session_state.user:
-                    st.button("Save Graph", on_click=save_graph, key="save_graph")
+                    st.button("Save Graph", on_click=save_graph, key="save_graph_button")
             except (SyntaxError, TypeError):
                 st.error("please enter a valid y-int")
         elif graph_type == "line graph":
             create_graph_wo_y_int(df=dataframe, labels=labels, checkboxes=checkboxes, trendlines=st.session_state.trendlines, window_size=window_size)
             if st.session_state.user:
-                st.button("Save Graph", on_click=save_graph, key="save_graph")
+                st.button("Save Graph", on_click=save_graph, key="save_graph_button")
         else:
             create_bar_graph(df=dataframe, labels=labels)
             if st.session_state.user:
-                st.button("Save Graph", on_click=save_graph, key="save_graph")
+                st.button("Save Graph", on_click=save_graph, key="save_graph_button")
 
     except ValueError:
         st.error("please ensure you have at least 2 data points")
