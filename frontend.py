@@ -19,7 +19,7 @@ if "trendlines" not in st.session_state:
 if "previous_lines" not in st.session_state:
     st.session_state.previous_lines = {"upper": None, "lower": None, "average": None}
 if "window_size" not in st.session_state:
-    st.session_state.window_size = {"xmin": 0.0, "xmax": 10.0, "ymin": 0.0, "ymax": 10.0}
+    st.session_state.window_size = {"xmin": 0.0, "xmax": None, "ymin": 0.0, "ymax": None}
 
 if "average_enter" not in st.session_state:
     st.session_state.average_enter = False

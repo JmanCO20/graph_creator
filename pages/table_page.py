@@ -79,7 +79,7 @@ def form_questions():
 
             if st.form_submit_button("Create Graph"):
                 st.session_state.checkboxes = {"has_y_int": has_y_int, "y_int": y_int, "legend": wants_legend if graph_type[0] == "line graph" else False , "wants_set_window": wants_set_window}
-                st.session_state.window_size = {"xmin": x_min, "xmax": x_max, "ymin": y_min, "ymax": y_max} if graph_type[0] == "line graph" and wants_set_window else {"xmin": 0.0, "xmax": 10.0, "ymin": 0.0, "ymax": 10.0}
+                st.session_state.window_size = {"xmin": x_min, "xmax": x_max, "ymin": y_min, "ymax": y_max} if graph_type[0] == "line graph" and wants_set_window else {"xmin": 0.0, "xmax": None, "ymin": 0.0, "ymax": None}
                 st.session_state.titles = {"title": title, "x_label": x_label, "y_label": y_label}
                 st.session_state.df = data_table
                 st.session_state.graph_type = graph_type[0]
