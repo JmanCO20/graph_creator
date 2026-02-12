@@ -1,0 +1,13 @@
+name: Ping Frontend
+
+on:
+  schedule:
+    - cron: '0 23 * * *'
+  workflow_dispatch: 
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Frontend
+        run: curl -I https://grapherrorbars.streamlit.app/
