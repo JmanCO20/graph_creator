@@ -110,6 +110,6 @@ async def delete_graph(graph_id: uuid.UUID,
                  ):
     await session.execute(delete(Graph).where(Graph.id == graph_id))
     await session.commit()
-@app.get("/health")
+@app.api_route("/health", methods=["GET", "HEAD"])
 async def health_check():
     return {"status": "ok"}
