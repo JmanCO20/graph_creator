@@ -8,7 +8,7 @@ st.header(f"Hello {st.session_state.user['email']}")
 
 cookie = st.session_state.session.cookies.get_dict()
 
-col1, col2, col3 = st.columns(3)
+col1, col2 = st.columns(2)
 with col1:
     if st.button("Logout"):
         response = st.session_state.session.post(f"{API_URL}/auth/jwt/logout", cookies=cookie)
@@ -21,15 +21,6 @@ with col1:
             st.error(response.text)
 
 with col2:
-    graph_id = st.text_input("Enter Graph Id")
-    if st.button("Delete Graph"):
-        response = st.session_state.session.delete(f"{API_URL}/graph/{graph_id}", cookies=cookie)
-        if response.status_code == 200:
-            st.success("successfully deleted graph")
-        else:
-            st.error(response.text)
-
-with col3:
     if st.button("Delete Account"):
         response = st.session_state.session.delete(f"{API_URL}/users/me", cookies=cookie)
         if response.status_code == 204:

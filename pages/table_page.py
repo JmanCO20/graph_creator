@@ -9,6 +9,18 @@ cookie = st.session_state.session.cookies.get_dict()
 
 st.title("Table Page")
 
+if st.session_state.graph_update["update"]:
+    response = st.session_state.session.get(API_URL + f"/user/update/{st.session_state.graph_update["graph_id"]}", cookies=cookie)
+    if response.status_code == 200:
+        graphs = response.json()
+        st.session_state.labels = graphs["data"]["labels"]
+        st.session_state.df = pd.DataFrame(graphs["data"]["df"])
+        st.session_state.graph_type = graphs["graph_type"]
+        st.session_state.checkboxes = graphs["data"]["checkboxes"]
+        st.session_state.trendlines = graphs["data"]["trendlines"]
+        st.session_state.window_size = graphs["data"]["window_size"]
+        st.session_state.previous_lines = graphs["data"]["previous_lines"]
+
 def table_view_for_graphs(column_type: type):
     if column_type == float:
         st.session_state.df = pd.DataFrame({

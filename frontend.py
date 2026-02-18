@@ -20,6 +20,8 @@ if "previous_lines" not in st.session_state:
     st.session_state.previous_lines = {"upper": None, "lower": None, "average": None}
 if "window_size" not in st.session_state:
     st.session_state.window_size = {"xmin": 0.0, "xmax": None, "ymin": 0.0, "ymax": None}
+if "graph_update" not in st.session_state:
+    st.session_state.graph_update = {"update": False, "graph_id": None}
 
 if "average_enter" not in st.session_state:
     st.session_state.average_enter = False
@@ -36,9 +38,10 @@ table_page = st.Page("pages/table_page.py", title="Table Creator")
 graph_page = st.Page("pages/graph_page.py", title="Graph Creator")
 login_page = st.Page("pages/login_page.py", title="Login Page")
 account_page = st.Page("pages/account_settings.py", title="Account Options")
+graph_settings = st.Page("pages/graph_settings.py", title="Graph Settings")
 
 if st.session_state.user:
-    pg = st.navigation([table_page, graph_page, account_page])
+    pg = st.navigation([table_page, graph_page, account_page, graph_settings])
 else:
     pg = st.navigation([table_page, graph_page, login_page])
 

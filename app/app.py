@@ -1,8 +1,8 @@
-from sqlalchemy import select, delete
+from sqlalchemy import select, delete, update
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from fastapi import FastAPI, Depends, APIRouter, status
+from fastapi import FastAPI, Depends, APIRouter, status, HTTPException
 
 from .db import Graph, User, create_db_and_tables, get_async_sessionmaker
 
@@ -30,7 +30,7 @@ async def delete_own_account(user: User = Depends(current_active_user),
 
     await session.execute(delete(Graph).where(Graph.user_id == user.id))
     await usermanager.delete(user)
-    return
+    await session.commit()
 
 app.include_router(fastapi_users.get_auth_router(auth_backend), prefix="/auth/jwt", tags=["auth"])
 app.include_router(fastapi_users.get_register_router(UserRead, UserCreate), prefix="/auth", tags=["auth"])
@@ -113,3 +113,53 @@ async def delete_graph(graph_id: uuid.UUID,
 @app.api_route("/health", methods=["GET", "HEAD"])
 async def health_check():
     return {"status": "ok"}
+
+@app.get("/user/update/{graph_id}")
+async def get_update_graph(graph_id: uuid.UUID,
+                           user: User = Depends(current_active_user),
+                           session: AsyncSession = Depends(get_async_sessionmaker)):
+    uuids = await session.execute(select(Graph).where(Graph.id == graph_id and Graph.user_id == user.id))
+    uuids = uuids.scalars().all()
+    uuids = [graph.id for graph in uuids]
+    if graph_id not in uuids:
+        raise HTTPException(status_code=404, detail="Graph not found")
+
+    else:
+        graph = await session.execute(select(Graph).where(Graph.id == graph_id and Graph.user_id == user.id))
+        graph = graph.scalars().all()
+        graph_data = None
+        for graph in graph:
+            graph_data = {
+                "id": graph.id,
+                "user_id": graph.user_id,
+                "title": graph.title,
+                "graph_type": graph.graph_type,
+                "data": graph.data,
+                "created_at": graph.created_at
+            }
+
+        return graph_data
+
+@app.put("/graph/update/{graph_id}")
+async def update_graph(graph_id: uuid.UUID,
+                       params: GraphParams,
+                       session: AsyncSession = Depends(get_async_sessionmaker),
+                       user: User = Depends(current_active_user)
+                       ):
+    updated_graph = await session.execute(
+        update(Graph)
+        .where(Graph.id == graph_id and Graph.user_id == user.id)
+        .values(title=params.labels["title"],
+                graph_type=params.graph_type,
+                data={
+            "df": params.df,
+            "labels": params.labels,
+            "checkboxes": params.checkboxes,
+            "trendlines": params.trendlines,
+            "window_size": params.window_size,
+            "previous_lines": params.previous_lines
+        })
+    )
+
+    await session.commit()
+    return updated_graph

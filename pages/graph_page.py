@@ -35,12 +35,15 @@ def save_graph():
             "window_size": window_size,
             "previous_lines": st.session_state.previous_lines
         }
-
-    response = st.session_state.session.post(API_URL + "/upload", json=data_dict, cookies=cookie)
+    if st.session_state.graph_update["update"]:
+        response = st.session_state.session.put(f"{API_URL}/graph/update/{st.session_state.graph_update["graph_id"]}", json=data_dict, cookies=cookie)
+    else:
+        response = st.session_state.session.post(API_URL + "/upload", json=data_dict, cookies=cookie)
 
     if response.status_code == 200:
         st.success("successfully uploaded graph")
         st.session_state.previous_lines = {"upper": None, "average": None, "lower": None}
+        st.session_state.graph_update = {"update": False, "graph_id": None}
     else:
         st.error(response.text)
 
