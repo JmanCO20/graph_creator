@@ -84,9 +84,9 @@ try:
         st.subheader("Upper Trendline")
         col1, col2, col3 = st.columns(3)
         with col1:
-            slope = st.number_input("Enter Slope Value", key="upper_slope", value=st.session_state.previous_lines["upper"][0])
+            slope = st.number_input("Enter Slope Value", key="upper_slope", value=st.session_state.previous_lines["upper"][0] if st.session_state.previous_lines["upper"] else None)
         with col2:
-            y_int = st.number_input("Enter y-intercept", key="upper_intercept", value=st.session_state.previous_lines["upper"][1])
+            y_int = st.number_input("Enter y-intercept", key="upper_intercept", value=st.session_state.previous_lines["upper"][1] if st.session_state.previous_lines["upper"] else None)
         with col3:
             enter = st.button("Enter", key="upper_enter")
 
@@ -94,9 +94,9 @@ try:
         st.subheader("Average Trendline")
         col1, col2, col3 = st.columns(3)
         with col1:
-            slope = st.number_input("Enter Slope Value", key="average_slope", value=st.session_state.previous_lines["average"][0])
+            slope = st.number_input("Enter Slope Value", key="average_slope", value=st.session_state.previous_lines["average"][0] if st.session_state.previous_lines["average"] else None)
         with col2:
-            y_int = st.number_input("Enter y-intercept", key="average_intercept", value=st.session_state.previous_lines["average"][1])
+            y_int = st.number_input("Enter y-intercept", key="average_intercept", value=st.session_state.previous_lines["average"][1] if st.session_state.previous_lines["average"] else None)
         with col3:
             enter = st.button("Enter", key="average_enter")
 
@@ -104,9 +104,9 @@ try:
         st.subheader("Lower Trendline")
         col1, col2, col3 = st.columns(3)
         with col1:
-            slope = st.number_input("Enter Slope Value", key="lower_slope", value=st.session_state.previous_lines["lower"][0])
+            slope = st.number_input("Enter Slope Value", key="lower_slope", value=st.session_state.previous_lines["lower"][0] if st.session_state.previous_lines["lower"] else None)
         with col2:
-            y_int = st.number_input("Enter y-intercept", key="lower_intercept", value=st.session_state.previous_lines["lower"][1])
+            y_int = st.number_input("Enter y-intercept", key="lower_intercept", value=st.session_state.previous_lines["lower"][1] if st.session_state.previous_lines["lower"] else None)
         with col3:
             enter = st.button("Enter", key="lower_enter")
 
