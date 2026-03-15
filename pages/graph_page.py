@@ -1,5 +1,5 @@
 import streamlit as st
-from app.graph_utilities import create_graph_w_y_int, create_bar_graph, create_graph_wo_y_int, create_graph_from_user
+from app.graph_utilities import create_graph_w_y_int, create_bar_graph, create_graph_wo_y_int, create_graph_from_user, load_user_graph
 
 API_URL = st.secrets["API_URL"]
 
@@ -84,9 +84,9 @@ try:
         st.subheader("Upper Trendline")
         col1, col2, col3 = st.columns(3)
         with col1:
-            slope = st.number_input("Enter Slope Value", key="upper_slope")
+            slope = st.number_input("Enter Slope Value", key="upper_slope", value=st.session_state.previous_lines["upper"][0])
         with col2:
-            y_int = st.number_input("Enter y-intercept", key="upper_intercept")
+            y_int = st.number_input("Enter y-intercept", key="upper_intercept", value=st.session_state.previous_lines["upper"][1])
         with col3:
             enter = st.button("Enter", key="upper_enter")
 
@@ -94,9 +94,9 @@ try:
         st.subheader("Average Trendline")
         col1, col2, col3 = st.columns(3)
         with col1:
-            slope = st.number_input("Enter Slope Value", key="average_slope")
+            slope = st.number_input("Enter Slope Value", key="average_slope", value=st.session_state.previous_lines["average"][0])
         with col2:
-            y_int = st.number_input("Enter y-intercept", key="average_intercept")
+            y_int = st.number_input("Enter y-intercept", key="average_intercept", value=st.session_state.previous_lines["average"][1])
         with col3:
             enter = st.button("Enter", key="average_enter")
 
@@ -104,9 +104,9 @@ try:
         st.subheader("Lower Trendline")
         col1, col2, col3 = st.columns(3)
         with col1:
-            slope = st.number_input("Enter Slope Value", key="lower_slope")
+            slope = st.number_input("Enter Slope Value", key="lower_slope", value=st.session_state.previous_lines["lower"][0])
         with col2:
-            y_int = st.number_input("Enter y-intercept", key="lower_intercept")
+            y_int = st.number_input("Enter y-intercept", key="lower_intercept", value=st.session_state.previous_lines["lower"][1])
         with col3:
             enter = st.button("Enter", key="lower_enter")
 
@@ -128,6 +128,10 @@ try:
         create_graph_from_user(df=dataframe, labels=labels, wants_legend=checkboxes["legend"], graph_attributes=graph_attributes, trendlines=wants_trendlines, checkboxes=checkboxes, window_size=window_size)
         if st.session_state.user:
             st.button("Save Edited Graph", on_click=save_graph)
+
+    if st.session_state.graph_update["update"]:
+        load_user_graph(df=dataframe, labels=labels, previous_lines=st.session_state.previous_lines, checkboxes=checkboxes, trendlines=wants_trendlines, window_size=window_size)
+        st.button("Save Edited Graph", on_click=save_graph)
 
 except ValueError:
     pass

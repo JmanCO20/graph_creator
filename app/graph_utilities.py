@@ -185,14 +185,14 @@ def create_bar_graph(labels: dict[str, str], df):
 
     st.pyplot(fig)
 
-def draw_lines(previous_lines: dict[str, tuple], ax: plt.Axes, window_size: dict[str, float| None], x: np.ndarray):
+def draw_lines(previous_lines: dict[str, list], ax: plt.Axes, window_size: dict[str, float| None], x: np.ndarray):
     for key in previous_lines.keys():
         if previous_lines[key] is not None:
             x_line = np.linspace(0, window_size["xmax"] if window_size["xmax"] is not None else x.max(), 200)
             y_line = previous_lines[key][0] * x_line + previous_lines[key][1]
             ax.plot(x_line, y_line, color=previous_lines[key][2], label=f"y = {previous_lines[key][0]:.3g}x + {previous_lines[key][1]:.3g}")
 
-def load_user_graph(df, labels: dict[str, str], previous_lines: dict[str, tuple], checkboxes: dict[str, bool | float], trendlines: dict[str, bool], window_size: dict[str, float| None]):
+def load_user_graph(df, labels: dict[str, str], previous_lines: dict[str, list], checkboxes: dict[str, bool | float], trendlines: dict[str, bool], window_size: dict[str, float| None]):
     fig, ax = plt.subplots()
 
     ax.set_title(labels["title"])
