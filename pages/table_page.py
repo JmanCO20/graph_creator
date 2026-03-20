@@ -96,6 +96,7 @@ def form_questions():
                 st.session_state.df = data_table
                 st.session_state.graph_type = graph_type[0]
                 st.session_state.trendlines = {"upper": wants_upper_trendline, "lower": wants_lower_trendline, "average": wants_average_trendline} if graph_type[0] == "line graph" else {"upper": False, "lower": False, "average": False}
+                st.session_state.labels = {"title": title, "x_label": x_label, "y_label": y_label}
                 st.switch_page("pages/graph_page.py")
     except ValueError:
         st.error("Please select a graph type")
