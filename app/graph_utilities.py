@@ -36,15 +36,15 @@ def creating_trendlines(trendlines: dict[str, bool], checkboxes: dict[str, bool 
         if trendlines["average"]:
             x_line, y_line, m = create_average_line(checkboxes["has_y_int"], checkboxes["y_int"], x, y, window_size)
             st.session_state.previous_lines["average"] = None
-            ax.plot(x_line, y_line, color="blue", label=f"y = {m:.{sig_figs}g}x + {checkboxes["y_int"]:.{sig_figs}g}")
+            ax.plot(x_line, y_line, color="blue", label=f"y = {m:.{sig_figs}g}x + {checkboxes['y_int']:.{sig_figs}g}")
         if trendlines["upper"]:
             x_line, y_line, m = create_average_line(checkboxes["has_y_int"], checkboxes["y_int"], x, upper_bound, window_size)
             st.session_state.previous_lines["upper"] = None
-            ax.plot(x_line, y_line, color="orange", label=f"y = {m:.{sig_figs}g}x + {checkboxes["y_int"]:.{sig_figs}g}")
+            ax.plot(x_line, y_line, color="orange", label=f"y = {m:.{sig_figs}g}x + {checkboxes['y_int']:.{sig_figs}g}")
         if trendlines["lower"]:
             x_line, y_line, m = create_average_line(checkboxes["has_y_int"], checkboxes["y_int"], x, lower_bound, window_size)
             st.session_state.previous_lines["lower"] = None
-            ax.plot(x_line, y_line, color="grey", label=f"y = {m:.{sig_figs}g}x + {checkboxes["y_int"]:.{sig_figs}g}")
+            ax.plot(x_line, y_line, color="grey", label=f"y = {m:.{sig_figs}g}x + {checkboxes['y_int']:.{sig_figs}g}")
     except ValueError:
         pass
 
