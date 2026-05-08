@@ -1,5 +1,5 @@
 import streamlit as st
-from app.graph_utilities import create_graph_w_y_int, create_bar_graph, create_graph_wo_y_int, create_graph_from_user
+from app.graph_utilities import create_graph_w_y_int, create_bar_graph, create_graph_wo_y_int, create_graph_from_user, load_user_graph, update_variables
 
 API_URL = st.secrets["API_URL"]
 
@@ -7,12 +7,15 @@ st.title("Graph Page")
 
 cookie = st.session_state.session.cookies.get_dict()
 
-dataframe = st.session_state.df
+update_variables()
+
+dataframe = st.session_state.df_copy
 graph_type = st.session_state.graph_type
-checkboxes = st.session_state.checkboxes
-labels = st.session_state.labels
-wants_trendlines = st.session_state.trendlines
-window_size = st.session_state.window_size
+checkboxes = st.session_state.checkboxes["values"]
+labels = st.session_state.labels["values"]
+wants_trendlines = st.session_state.trendlines["values"]
+window_size = st.session_state.window_size["values"]
+sig_figs = st.session_state.sig_figs["values"]
 
 def save_graph():
     if st.session_state.save_graph_button:
@@ -23,7 +26,8 @@ def save_graph():
             "checkboxes": checkboxes,
             "trendlines": wants_trendlines,
             "window_size": window_size,
-            "previous_lines": {"upper": None, "average": None, "lower": None}
+            "previous_lines": {"upper": None, "average": None, "lower": None},
+            "sig_figs": sig_figs
         }
     else:
         data_dict = {
@@ -33,9 +37,10 @@ def save_graph():
             "checkboxes": checkboxes,
             "trendlines": wants_trendlines,
             "window_size": window_size,
-            "previous_lines": st.session_state.previous_lines
+            "previous_lines": st.session_state.previous_lines,
+            "sig_figs": sig_figs
         }
-    if st.session_state.graph_update["update"]:
+    if st.session_state.graph_update["graph_id"]:
         response = st.session_state.session.put(f"{API_URL}/graph/update/{st.session_state.graph_update["graph_id"]}", json=data_dict, cookies=cookie)
     else:
         response = st.session_state.session.post(API_URL + "/upload", json=data_dict, cookies=cookie)
@@ -49,18 +54,18 @@ def save_graph():
 
 def show_graphs():
     try:
-        if not len(dataframe["x"]) >= 2 and not len(dataframe["y"]) >= 2:
+        if len(dataframe["x"]) <= 1 or len(dataframe["y"]) <= 1:
             raise ValueError
 
         if checkboxes["has_y_int"] and graph_type == "line graph":
             try:
-                create_graph_w_y_int(df=dataframe, labels=labels, checkboxes=checkboxes, trendlines=st.session_state.trendlines, window_size=window_size)
+                create_graph_w_y_int(df=dataframe, labels=labels, checkboxes=checkboxes, trendlines=wants_trendlines, window_size=window_size, sig_figs=sig_figs)
                 if st.session_state.user:
                     st.button("Save Graph", on_click=save_graph, key="save_graph_button")
             except (SyntaxError, TypeError):
                 st.error("please enter a valid y-int")
         elif graph_type == "line graph":
-            create_graph_wo_y_int(df=dataframe, labels=labels, checkboxes=checkboxes, trendlines=st.session_state.trendlines, window_size=window_size)
+            create_graph_wo_y_int(df=dataframe, labels=labels, checkboxes=checkboxes, trendlines=wants_trendlines, window_size=window_size, sig_figs=sig_figs)
             if st.session_state.user:
                 st.button("Save Graph", on_click=save_graph, key="save_graph_button")
         else:
@@ -70,8 +75,7 @@ def show_graphs():
 
     except ValueError:
         st.error("please ensure you have at least 2 data points")
-    except Exception as e:
-        st.error(e)
+    except Exception:
         st.error("please ensure you have filled out all the squares on the table")
 
 
@@ -84,9 +88,9 @@ try:
         st.subheader("Upper Trendline")
         col1, col2, col3 = st.columns(3)
         with col1:
-            slope = st.number_input("Enter Slope Value", key="upper_slope")
+            slope = st.number_input("Enter Slope Value", key="upper_slope", value=st.session_state.previous_lines["upper"][0] if st.session_state.previous_lines["upper"] else None, format=f"%.{sig_figs}g")
         with col2:
-            y_int = st.number_input("Enter y-intercept", key="upper_intercept")
+            y_int = st.number_input("Enter y-intercept", key="upper_intercept", value=st.session_state.previous_lines["upper"][1] if st.session_state.previous_lines["upper"] else None, format=f"%.{sig_figs}g")
         with col3:
             enter = st.button("Enter", key="upper_enter")
 
@@ -94,9 +98,9 @@ try:
         st.subheader("Average Trendline")
         col1, col2, col3 = st.columns(3)
         with col1:
-            slope = st.number_input("Enter Slope Value", key="average_slope")
+            slope = st.number_input("Enter Slope Value", key="average_slope", value=st.session_state.previous_lines["average"][0] if st.session_state.previous_lines["average"] else None, format=f"%.{sig_figs}g")
         with col2:
-            y_int = st.number_input("Enter y-intercept", key="average_intercept")
+            y_int = st.number_input("Enter y-intercept", key="average_intercept", value=st.session_state.previous_lines["average"][1] if st.session_state.previous_lines["average"] else None, format=f"%.{sig_figs}g")
         with col3:
             enter = st.button("Enter", key="average_enter")
 
@@ -104,30 +108,32 @@ try:
         st.subheader("Lower Trendline")
         col1, col2, col3 = st.columns(3)
         with col1:
-            slope = st.number_input("Enter Slope Value", key="lower_slope")
+            slope = st.number_input("Enter Slope Value", key="lower_slope", value=st.session_state.previous_lines["lower"][0] if st.session_state.previous_lines["lower"] else None, format=f"%.{sig_figs}g")
         with col2:
-            y_int = st.number_input("Enter y-intercept", key="lower_intercept")
+            y_int = st.number_input("Enter y-intercept", key="lower_intercept", value=st.session_state.previous_lines["lower"][1] if st.session_state.previous_lines["lower"] else None, format=f"%.{sig_figs}g")
         with col3:
             enter = st.button("Enter", key="lower_enter")
 
     if st.session_state.upper_enter:
         st.subheader("Edited Graph")
         graph_attributes = {"slope": st.session_state.upper_slope, "y_int": st.session_state.upper_intercept}
-        create_graph_from_user(df=dataframe, labels=labels, wants_legend=checkboxes["legend"],  graph_attributes=graph_attributes, trendlines=wants_trendlines, checkboxes=checkboxes, window_size=window_size)
+        create_graph_from_user(df=dataframe, labels=labels, wants_legend=checkboxes["legend"],  graph_attributes=graph_attributes, trendlines=wants_trendlines, checkboxes=checkboxes, window_size=window_size, sig_figs=sig_figs)
         if st.session_state.user:
             st.button("Save Edited Graph", on_click=save_graph)
     elif st.session_state.average_enter:
         st.subheader("Edited Graph")
         graph_attributes = {"slope": st.session_state.average_slope, "y_int": st.session_state.average_intercept}
-        create_graph_from_user(df=dataframe, labels=labels, wants_legend=checkboxes["legend"], graph_attributes=graph_attributes, trendlines=wants_trendlines, checkboxes=checkboxes, window_size=window_size)
+        create_graph_from_user(df=dataframe, labels=labels, wants_legend=checkboxes["legend"], graph_attributes=graph_attributes, trendlines=wants_trendlines, checkboxes=checkboxes, window_size=window_size, sig_figs=sig_figs)
         if st.session_state.user:
             st.button("Save Edited Graph", on_click=save_graph)
     elif st.session_state.lower_enter:
         st.subheader("Edited Graph")
         graph_attributes = {"slope": st.session_state.lower_slope, "y_int": st.session_state.lower_intercept}
-        create_graph_from_user(df=dataframe, labels=labels, wants_legend=checkboxes["legend"], graph_attributes=graph_attributes, trendlines=wants_trendlines, checkboxes=checkboxes, window_size=window_size)
+        create_graph_from_user(df=dataframe, labels=labels, wants_legend=checkboxes["legend"], graph_attributes=graph_attributes, trendlines=wants_trendlines, checkboxes=checkboxes, window_size=window_size, sig_figs=sig_figs)
         if st.session_state.user:
             st.button("Save Edited Graph", on_click=save_graph)
+
+
 
 except ValueError:
     pass

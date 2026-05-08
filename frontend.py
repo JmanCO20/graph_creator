@@ -6,20 +6,38 @@ if "user" not in st.session_state:
     st.session_state.user = None
 if "session" not in st.session_state:
     st.session_state.session = requests.Session()
+if "df_copy" not in st.session_state:
+    st.session_state.df_copy = {"x": None, "y": None, "x uncertainty": 0, "y uncertainty": 0}
 if "df" not in st.session_state:
-    st.session_state.df = pd.DataFrame(columns=["x", "x uncertainty", "y", "y uncertainty"])
+    st.session_state.df = pd.DataFrame({"x": pd.Series(dtype=float, data=st.session_state.df_copy["x"]),
+                                        "x uncertainty": pd.Series(dtype=float, data=st.session_state.df_copy["x uncertainty"] if "x uncertainty" in st.session_state.df_copy else 0),
+                                        "y": pd.Series(dtype=float, data=st.session_state.df_copy["y"]),
+                                        "y uncertainty": pd.Series(dtype=float, data=st.session_state.df_copy["y uncertainty"])
+                                        })
 if "checkboxes" not in st.session_state:
-    st.session_state.checkboxes = {"has_y_int": False, "y_int": None, "legend": True, "wants_set_window": False}
+    st.session_state.checkboxes = {"frontend": {"has_y_int": False, "y_int": None, "legend": True, "wants_set_window": False},
+                                   "values": {"has_y_int": False, "y_int": None, "legend": True, "wants_set_window": False}
+                                   }
+if "sig_figs" not in st.session_state:
+    st.session_state.sig_figs = {"frontend": 3,
+                                 "values": 3
+                                 }
 if "labels" not in st.session_state:
-    st.session_state.labels = {"title": "Title", "x_label": "x_label", "y_label": "y_label"}
+    st.session_state.labels = {"frontend": {"title": "Title", "x_label": "x_label", "y_label": "y_label"},
+                               "values": {"title": "Title", "x_label": "x_label", "y_label": "y_label"}
+                               }
 if "graph_type" not in st.session_state:
     st.session_state.graph_type = None
 if "trendlines" not in st.session_state:
-    st.session_state.trendlines = {"upper": False, "lower": False, "average": False}
+    st.session_state.trendlines = {"frontend":{"upper": False, "lower": False, "average": False},
+                                   "values": {"upper": False, "lower": False, "average": False}
+                                   }
 if "previous_lines" not in st.session_state:
     st.session_state.previous_lines = {"upper": None, "lower": None, "average": None}
 if "window_size" not in st.session_state:
-    st.session_state.window_size = {"xmin": 0.0, "xmax": None, "ymin": 0.0, "ymax": None}
+    st.session_state.window_size = {"frontend": {"xmin": 0.0, "xmax": None, "ymin": 0.0, "ymax": None},
+                                    "values": {"xmin": 0.0, "xmax": None, "ymin": 0.0, "ymax": None}
+                                    }
 if "graph_update" not in st.session_state:
     st.session_state.graph_update = {"update": False, "graph_id": None}
 
