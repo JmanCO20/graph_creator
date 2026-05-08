@@ -3,7 +3,16 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 
-def create_average_line(has_y_int, y_int: int, x, y, window_size: dict[str, float | None]):
+def update_variables():
+    if "df" in st.session_state:
+        del st.session_state["df"]
+    st.session_state.labels["frontend"] = st.session_state.labels["values"].copy()
+    st.session_state.checkboxes["frontend"] = st.session_state.checkboxes["values"].copy()
+    st.session_state.trendlines["frontend"] = st.session_state.trendlines["values"].copy()
+    st.session_state.window_size["frontend"] = st.session_state.window_size["values"].copy()
+    st.session_state.sig_figs["frontend"] = st.session_state.sig_figs["values"]
+
+def create_average_line(has_y_int, y_int: float, x, y, window_size: dict[str, float | None]):
     if has_y_int:
         denom = np.sum(x ** 2)
         if denom == 0:
@@ -13,29 +22,29 @@ def create_average_line(has_y_int, y_int: int, x, y, window_size: dict[str, floa
 
         x_line = np.linspace(0, window_size["xmax"] if window_size["xmax"] is not None else x.max(), 200)
         y_line = m * x_line + y_int
-        return x_line, y_line, round(m, 2)
+        return x_line, y_line,m
     else:
         m, b = np.polyfit(x, y, 1)
         x_line = np.linspace(0, window_size["xmax"] if window_size["xmax"] is not None else x.max(), 200)
         y_line = m * x_line + b
-        return x_line, y_line, round(m, 2), round(b, 2)
+        return x_line, y_line, m, b
 
-def creating_trendlines(trendlines: dict[str, bool], checkboxes: dict[str, bool | float], ax: plt.Axes, x, y, upper_bound, lower_bound, window_size:dict[str, float| None], half_of_upper: int | None=None, half_of_lower: int | None=None):
+def creating_trendlines(trendlines: dict[str, bool], checkboxes: dict[str, bool | float], ax: plt.Axes, x, y, upper_bound, lower_bound, window_size:dict[str, float| None], sig_figs:int, half_of_upper: int | None=None, half_of_lower: int | None=None):
     try:
         if not checkboxes["has_y_int"]:
             raise ValueError
         if trendlines["average"]:
             x_line, y_line, m = create_average_line(checkboxes["has_y_int"], checkboxes["y_int"], x, y, window_size)
             st.session_state.previous_lines["average"] = None
-            ax.plot(x_line, y_line, color="blue", label=f"y = {m:.3g}x + {checkboxes["y_int"]:.3g}")
+            ax.plot(x_line, y_line, color="blue", label=f"y = {m:.{sig_figs}g}x + {checkboxes["y_int"]:.{sig_figs}g}")
         if trendlines["upper"]:
             x_line, y_line, m = create_average_line(checkboxes["has_y_int"], checkboxes["y_int"], x, upper_bound, window_size)
             st.session_state.previous_lines["upper"] = None
-            ax.plot(x_line, y_line, color="orange", label=f"y = {m:.3g}x + {checkboxes["y_int"]:.3g}")
+            ax.plot(x_line, y_line, color="orange", label=f"y = {m:.{sig_figs}g}x + {checkboxes["y_int"]:.{sig_figs}g}")
         if trendlines["lower"]:
             x_line, y_line, m = create_average_line(checkboxes["has_y_int"], checkboxes["y_int"], x, lower_bound, window_size)
             st.session_state.previous_lines["lower"] = None
-            ax.plot(x_line, y_line, color="grey", label=f"y = {m:.3g}x + {checkboxes["y_int"]:.3g}")
+            ax.plot(x_line, y_line, color="grey", label=f"y = {m:.{sig_figs}g}x + {checkboxes["y_int"]:.{sig_figs}g}")
     except ValueError:
         pass
 
@@ -45,16 +54,15 @@ def creating_trendlines(trendlines: dict[str, bool], checkboxes: dict[str, bool 
         if trendlines["average"]:
             x_line, y_line, m, b = create_average_line(checkboxes["has_y_int"], checkboxes["y_int"], x, y, window_size)
             st.session_state.previous_lines["average"] = None
-            ax.plot(x_line, y_line, color="blue", label=f"y = {m:.3g}x + {b:.3g}")
+            ax.plot(x_line, y_line, color="blue", label=f"y = {m:.{sig_figs}g}x + {b:.{sig_figs}g}")
 
         if trendlines["upper"]:
-            points_for_upper_bound = pd.concat(
-                [upper_bound[:half_of_upper], lower_bound[half_of_upper:half_of_lower + half_of_upper + 1]])
+            points_for_upper_bound = pd.concat([upper_bound[:half_of_upper], lower_bound[half_of_upper:half_of_lower + half_of_upper + 1]])
             st.session_state.previous_lines["upper"] = None
             points_for_upper_bound = points_for_upper_bound.to_numpy()
 
             x_line, y_line, m, b = create_average_line(checkboxes["has_y_int"], checkboxes["y_int"], x, points_for_upper_bound, window_size)
-            ax.plot(x_line, y_line, color="orange", label=f"y = {m:.3g}x + {b:.3g}")
+            ax.plot(x_line, y_line, color="orange", label=f"y = {m:.{sig_figs}g}x + {b:.{sig_figs}g}")
 
         if trendlines["lower"]:
             points_for_lower_bound = pd.concat([lower_bound[:half_of_lower], upper_bound[half_of_lower:half_of_upper + half_of_lower + 1]],
@@ -63,12 +71,12 @@ def creating_trendlines(trendlines: dict[str, bool], checkboxes: dict[str, bool 
             points_for_lower_bound = points_for_lower_bound.to_numpy()
 
             x_line, y_line, m, b = create_average_line(checkboxes["has_y_int"], checkboxes["y_int"], x, points_for_lower_bound, window_size)
-            ax.plot(x_line, y_line, color="grey", label=f"y = {m:.3g}x + {b:.3g}")
+            ax.plot(x_line, y_line, color="grey", label=f"y = {m:.{sig_figs}g}x + {b:.{sig_figs}g}")
     except ValueError:
         pass
 
 
-def create_graph_w_y_int(df, labels: dict[str, str], checkboxes: dict[str, bool | float], trendlines: dict[str, bool], window_size: dict[str, float| None]):
+def create_graph_w_y_int(df, labels: dict[str, str], checkboxes: dict[str, bool | float], trendlines: dict[str, bool], window_size: dict[str, float| None], sig_figs:int):
 
     fig, ax = plt.subplots()
 
@@ -106,7 +114,8 @@ def create_graph_w_y_int(df, labels: dict[str, str], checkboxes: dict[str, bool 
                         y=y,
                         upper_bound=upper_bound,
                         lower_bound=lower_bound,
-                        window_size=window_size
+                        window_size=window_size,
+                        sig_figs=sig_figs
                         )
     if checkboxes["wants_set_window"]:
         ax.set_xlim(left=window_size["xmin"], right=window_size["xmax"])
@@ -117,7 +126,7 @@ def create_graph_w_y_int(df, labels: dict[str, str], checkboxes: dict[str, bool 
 
     st.pyplot(fig)
 
-def create_graph_wo_y_int(labels: dict[str, str], df, checkboxes: dict[str, bool | float], trendlines: dict[str, bool], window_size: dict[str, float| None]):
+def create_graph_wo_y_int(labels: dict[str, str], df, checkboxes: dict[str, bool | float], trendlines: dict[str, bool], window_size: dict[str, float| None], sig_figs:int):
 
     fig, ax = plt.subplots()
 
@@ -157,7 +166,8 @@ def create_graph_wo_y_int(labels: dict[str, str], df, checkboxes: dict[str, bool
                         lower_bound=lower_bound,
                         half_of_upper=half_of_upper,
                         half_of_lower=half_of_lower,
-                        window_size=window_size
+                        window_size=window_size,
+                        sig_figs=sig_figs
                         )
 
     if checkboxes["wants_set_window"]:
@@ -185,14 +195,14 @@ def create_bar_graph(labels: dict[str, str], df):
 
     st.pyplot(fig)
 
-def draw_lines(previous_lines: dict[str, list], ax: plt.Axes, window_size: dict[str, float| None], x: np.ndarray):
+def draw_lines(previous_lines: dict[str, list], ax: plt.Axes, window_size: dict[str, float| None], x: np.ndarray, sig_figs:int):
     for key in previous_lines.keys():
         if previous_lines[key] is not None:
             x_line = np.linspace(0, window_size["xmax"] if window_size["xmax"] is not None else x.max(), 200)
             y_line = previous_lines[key][0] * x_line + previous_lines[key][1]
-            ax.plot(x_line, y_line, color=previous_lines[key][2], label=f"y = {previous_lines[key][0]:.3g}x + {previous_lines[key][1]:.3g}")
+            ax.plot(x_line, y_line, color=previous_lines[key][2], label=f"y = {previous_lines[key][0]:.{sig_figs}g}x + {previous_lines[key][1]:.{sig_figs}g}")
 
-def load_user_graph(df, labels: dict[str, str], previous_lines: dict[str, list], checkboxes: dict[str, bool | float], trendlines: dict[str, bool], window_size: dict[str, float| None]):
+def load_user_graph(df, labels: dict[str, str], previous_lines: dict[str, list], checkboxes: dict[str, bool | float], trendlines: dict[str, bool], window_size: dict[str, float| None], sig_figs:int):
     fig, ax = plt.subplots()
 
     ax.set_title(labels["title"])
@@ -235,10 +245,11 @@ def load_user_graph(df, labels: dict[str, str], previous_lines: dict[str, list],
                         lower_bound=lower_bound,
                         half_of_upper=half_of_upper if not checkboxes["has_y_int"] else None,
                         half_of_lower=half_of_lower if not checkboxes["has_y_int"] else None,
-                        window_size=window_size
+                        window_size=window_size,
+                        sig_figs=sig_figs
                         )
 
-    draw_lines(previous_lines, ax, window_size, x)
+    draw_lines(previous_lines, ax, window_size, x, sig_figs)
 
     if checkboxes["wants_set_window"]:
         ax.set_xlim(left=window_size["xmin"], right=window_size["xmax"])
@@ -249,7 +260,7 @@ def load_user_graph(df, labels: dict[str, str], previous_lines: dict[str, list],
 
     st.pyplot(fig)
 
-def create_graph_from_user(df, labels: dict[str, str], wants_legend: bool, graph_attributes: dict[str, float], trendlines: dict[str, bool], checkboxes: dict[str, bool | float], window_size: dict[str, float| None]):
+def create_graph_from_user(df, labels: dict[str, str], wants_legend: bool, graph_attributes: dict[str, float], trendlines: dict[str, bool], checkboxes: dict[str, bool | float], window_size: dict[str, float| None], sig_figs:int,):
 
     fig, ax = plt.subplots()
 
@@ -292,20 +303,21 @@ def create_graph_from_user(df, labels: dict[str, str], wants_legend: bool, graph
                         lower_bound=lower_bound,
                         half_of_upper=half_of_upper if not checkboxes["has_y_int"] else None,
                         half_of_lower=half_of_lower if not checkboxes["has_y_int"] else None,
-                        window_size=window_size
+                        window_size=window_size,
+                        sig_figs=sig_figs
                         )
 
     if st.session_state.upper_enter:
         st.session_state.previous_lines["upper"] = [graph_attributes["slope"], graph_attributes["y_int"], "orange"]
-        draw_lines(st.session_state.previous_lines, ax, window_size, x)
+        draw_lines(st.session_state.previous_lines, ax, window_size, x, sig_figs)
 
     if st.session_state.average_enter:
         st.session_state.previous_lines["average"] = [graph_attributes["slope"], graph_attributes["y_int"], "blue"]
-        draw_lines(st.session_state.previous_lines, ax, window_size, x)
+        draw_lines(st.session_state.previous_lines, ax, window_size, x, sig_figs)
 
     if st.session_state.lower_enter:
         st.session_state.previous_lines["lower"] = [graph_attributes["slope"], graph_attributes["y_int"], "grey"]
-        draw_lines(st.session_state.previous_lines, ax, window_size, x)
+        draw_lines(st.session_state.previous_lines, ax, window_size, x, sig_figs)
 
     if checkboxes["wants_set_window"]:
         ax.set_xlim(left=window_size["xmin"], right=window_size["xmax"])

@@ -1,7 +1,5 @@
 import streamlit as st
 import pandas as pd
-from app.graph_utilities import create_graph_w_y_int, create_bar_graph, create_graph_wo_y_int, load_user_graph
-from fastapi import HTTPException
 
 API_URL = st.secrets["API_URL"]
 
@@ -13,34 +11,24 @@ if st.session_state.graph_update["update"]:
     response = st.session_state.session.get(API_URL + f"/user/update/{st.session_state.graph_update["graph_id"]}", cookies=cookie)
     if response.status_code == 200:
         graphs = response.json()
-        st.session_state.labels = graphs["data"]["labels"]
+        st.session_state.labels["frontend"] = graphs["data"]["labels"]
         st.session_state.df = pd.DataFrame(graphs["data"]["df"])
         st.session_state.graph_type = graphs["graph_type"]
-        st.session_state.checkboxes = graphs["data"]["checkboxes"]
-        st.session_state.trendlines = graphs["data"]["trendlines"]
-        st.session_state.window_size = graphs["data"]["window_size"]
+        st.session_state.checkboxes["frontend"] = graphs["data"]["checkboxes"]
+        st.session_state.trendlines["frontend"] = graphs["data"]["trendlines"]
+        st.session_state.window_size["frontend"] = graphs["data"]["window_size"]
         st.session_state.previous_lines = graphs["data"]["previous_lines"]
+        st.session_state.sig_figs["frontend"] = graphs["data"]["sig_figs"]
+        st.session_state.graph_update["update"] = False
 
-def table_view_for_graphs(column_type: type):
-    if column_type == float:
-        st.session_state.df = pd.DataFrame({
-            "x": pd.Series(dtype=float, data=st.session_state.df["x"]),
-            "x uncertainty": pd.Series(dtype=float, data=st.session_state.df["x uncertainty"] if "x uncertainty" in st.session_state.df else None),
-            "y": pd.Series(dtype=float, data=st.session_state.df["y"]),
-            "y uncertainty": pd.Series(dtype=float, data=st.session_state.df["y uncertainty"])
-        })
+def table_view_for_graphs(graph_type: str = "line graph"):
+    if graph_type == "line graph":
+        df = st.session_state.df[["x", "x uncertainty", "y", "y uncertainty"]]
     else:
-        st.session_state.df = pd.DataFrame({
-            "x": pd.Series(dtype=str, data=st.session_state.df["x"]),
-            "y": pd.Series(dtype=float, data=st.session_state.df["y"]),
-            "y uncertainty": pd.Series(dtype=float, data=st.session_state.df["y uncertainty"])
-        })
+        df = st.session_state.df[["x", "y", "y uncertainty"]]
 
-
-    editable_table = st.data_editor(st.session_state.df.reset_index(drop=True), num_rows="dynamic", hide_index=True)
-
-    return editable_table
-
+    df.reset_index(drop=True)
+    return df
 
 def form_questions():
     try:
@@ -48,102 +36,63 @@ def form_questions():
 
         if not graph_type:
             raise ValueError
-        elif graph_type[0] == "line graph":
-            column_type = float
-        else:
-            column_type = str
 
-        data_table = table_view_for_graphs(column_type)
+        dataframe = table_view_for_graphs(graph_type[0])
+
+        st.session_state.df_copy = st.data_editor(
+            dataframe.reset_index(drop=True),
+            key="editable_table",
+            num_rows="dynamic",
+            hide_index=True)
+
+        st.session_state.labels["values"]["title"] = st.text_input("Title for graph", value=st.session_state.labels["frontend"]["title"])
+        st.session_state.labels["values"]["y_label"] = st.text_input("Y-axis label", value=st.session_state.labels["frontend"]["y_label"])
+        st.session_state.labels["values"]["x_label"] = st.text_input("X-axis label", value=st.session_state.labels["frontend"]["x_label"])
+
         if graph_type[0] == "line graph":
-            has_y_int = st.checkbox("Does your graph have a set Y Intercept", value=st.session_state.checkboxes["has_y_int"])
+            has_y_int = st.checkbox("Does your graph have a set Y Intercept", value=st.session_state.checkboxes["frontend"]["has_y_int"])
             if has_y_int:
-                y_int = st.number_input("Enter Y Intercept value", value=st.session_state.checkboxes["y_int"])
+                y_int = st.number_input("Enter Y Intercept value", value=st.session_state.checkboxes["frontend"]["y_int"])
             else:
                 y_int = None
 
-            wants_set_window = st.checkbox("Set graph window size", value=st.session_state.checkboxes["wants_set_window"])
+            st.session_state.sig_figs["values"] = st.number_input("Enter number of sig figs", value=st.session_state.sig_figs["frontend"])
+
+            st.session_state.trendlines["values"]["upper"] = st.checkbox("Endable upper trendline", value=st.session_state.trendlines["frontend"]["upper"])
+            st.session_state.trendlines["values"]["average"] = st.checkbox("Enable average trendline", value=st.session_state.trendlines["frontend"]["average"])
+            st.session_state.trendlines["values"]["lower"] = st.checkbox("Enable lower trendline", value=st.session_state.trendlines["frontend"]["lower"])
+            wants_legend = st.checkbox("Enable legend", value=st.session_state.checkboxes["frontend"]["legend"])
+
+            wants_set_window = st.checkbox("Set graph window size", value=st.session_state.checkboxes["frontend"]["wants_set_window"])
             if wants_set_window:
                 col1, col2, col3, col4 = st.columns(4)
                 with col1:
-                    x_min = st.number_input("Enter X-min", value=st.session_state.window_size["xmin"])
+                    x_min = st.number_input("Enter X-min", value=st.session_state.window_size["frontend"]["xmin"])
                 with col2:
-                    x_max = st.number_input("Enter X-max", value=st.session_state.window_size["xmax"])
+                    x_max = st.number_input("Enter X-max", value=st.session_state.window_size["frontend"]["xmax"])
                 with col3:
-                    y_min = st.number_input("Enter Y-min", value=st.session_state.window_size["ymin"])
+                    y_min = st.number_input("Enter Y-min", value=st.session_state.window_size["frontend"]["ymin"])
                 with col4:
-                    y_max = st.number_input("Enter Y-max", value=st.session_state.window_size["ymax"])
+                    y_max = st.number_input("Enter Y-max", value=st.session_state.window_size["frontend"]["ymax"])
 
         else:
             wants_set_window = False
             has_y_int = False
             y_int = None
+            st.session_state.trendlines["values"]["upper"] = False
+            st.session_state.trendlines["values"]["lower"] = False
+            st.session_state.trendlines["values"]["average"] = False
+            wants_legend = False
 
-        with st.form(key="form", border=False):
-            if graph_type[0] == "line graph":
-                wants_upper_trendline = st.checkbox("Endable upper trendline", value=st.session_state.trendlines["upper"])
-                wants_average_trendline = st.checkbox("Enable average trendline", value=st.session_state.trendlines["average"])
-                wants_lower_trendline = st.checkbox("Enable lower trendline", value=st.session_state.trendlines["lower"])
-                wants_legend = st.checkbox("Enable legend", value=st.session_state.checkboxes["legend"])
-
-            title = st.text_input("Title for graph", value=st.session_state.labels["title"])
-            y_label = st.text_input("Y-axis label", value=st.session_state.labels["y_label"])
-            x_label = st.text_input("X-axis label", value=st.session_state.labels["x_label"])
-
-            if st.form_submit_button("Create Graph"):
-                st.session_state.checkboxes = {"has_y_int": has_y_int, "y_int": y_int, "legend": wants_legend if graph_type[0] == "line graph" else False , "wants_set_window": wants_set_window}
-                st.session_state.window_size = {"xmin": x_min, "xmax": x_max, "ymin": y_min, "ymax": y_max} if graph_type[0] == "line graph" and wants_set_window else {"xmin": 0.0, "xmax": None, "ymin": 0.0, "ymax": None}
-                st.session_state.titles = {"title": title, "x_label": x_label, "y_label": y_label}
-                st.session_state.df = data_table
-                st.session_state.graph_type = graph_type[0]
-                st.session_state.trendlines = {"upper": wants_upper_trendline, "lower": wants_lower_trendline, "average": wants_average_trendline} if graph_type[0] == "line graph" else {"upper": False, "lower": False, "average": False}
-                st.switch_page("pages/graph_page.py")
+        st.session_state.checkboxes["values"] = {"has_y_int": has_y_int, "y_int": y_int, "legend": wants_legend if graph_type[0] == "line graph" else False , "wants_set_window": wants_set_window}
+        st.session_state.window_size["values"] = {"xmin": x_min, "xmax": x_max, "ymin": y_min, "ymax": y_max} if graph_type[0] == "line graph" and wants_set_window else {"xmin": 0.0, "xmax": None, "ymin": 0.0, "ymax": None}
+        st.session_state.graph_type = graph_type[0]
+        if st.button("Submit"):
+            st.switch_page("pages/graph_page.py")
     except ValueError:
         st.error("Please select a graph type")
 
-def create_graph():
-    if graph_type == "bar graph":
-        create_bar_graph(labels=labels, df=df)
-    elif previous_lines.keys() != [None, None, None]:
-        load_user_graph(df=df, labels=labels, previous_lines=previous_lines, checkboxes=checkboxes, trendlines=trendlines, window_size=window_size)
-    elif checkboxes["has_y_int"]:
-        create_graph_w_y_int(df=df, labels=labels, checkboxes=checkboxes, trendlines=trendlines, window_size=window_size)
-    else:
-        create_graph_wo_y_int(labels=labels, df=df, checkboxes=checkboxes, trendlines=trendlines, window_size=window_size)
-
 form_questions()
-
-try:
-    if not st.session_state.user:
-        raise AssertionError
-    st.header("Previous Graphs")
-
-    response = st.session_state.session.get(API_URL + "/user/graphs", cookies=cookie)
-    if response.status_code == 200:
-        graphs = response.json()
-    else:
-        st.error(response.text)
-        response.raise_for_status()
-
-    container = st.container(border=True, height=1000)
-
-    with container:
-        for graph in graphs:
-            labels = graph["data"]["labels"]
-            df = pd.DataFrame(graph["data"]["df"])
-            graph_type = graph["graph_type"]
-            checkboxes = graph["data"]["checkboxes"]
-            trendlines = graph["data"]["trendlines"]
-            window_size = graph["data"]["window_size"]
-            previous_lines = graph["data"]["previous_lines"]
-
-            st.write(f"Graph Id: {graph["id"]}")
-            create_graph()
-
-
-except AssertionError:
-    pass
-except HTTPException:
-    st.error("Could not retrieve graphs")
 
 
 

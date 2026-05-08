@@ -1,6 +1,9 @@
 import streamlit as st
+from app.graph_utilities import update_variables
 
 API_URL = st.secrets["API_URL"]
+
+update_variables()
 
 st.title("Account Settings")
 

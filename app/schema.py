@@ -22,3 +22,4 @@ class GraphParams(BaseModel):
     trendlines: dict[str, bool]
     window_size: dict[str, None | float]
     previous_lines: dict[str, list | None]
+    sig_figs: int

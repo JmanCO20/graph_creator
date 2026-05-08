@@ -53,7 +53,8 @@ async def upload_graph(params: GraphParams,
             "checkboxes": params.checkboxes,
             "trendlines": params.trendlines,
             "window_size": params.window_size,
-            "previous_lines": params.previous_lines
+            "previous_lines": params.previous_lines,
+            "sig_figs": params.sig_figs
         }
     )
 
@@ -157,7 +158,8 @@ async def update_graph(graph_id: uuid.UUID,
             "checkboxes": params.checkboxes,
             "trendlines": params.trendlines,
             "window_size": params.window_size,
-            "previous_lines": params.previous_lines
+            "previous_lines": params.previous_lines,
+            "sig_figs": params.sig_figs
         })
     )
 
