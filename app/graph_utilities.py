@@ -189,9 +189,13 @@ def create_bar_graph(labels: dict[str, str], df):
 
     x = df["x"].to_numpy()
     y = df["y"].to_numpy()
+    bar_positions = np.arange(len(x))
 
-    ax.bar(x=x, height=y, color="blue", alpha=0.8)
-    ax.errorbar(x=x, y=y, xerr=None, yerr=df["y uncertainty"], fmt="none", linestyle="none", color="grey", alpha=0.5)
+    ax.bar(x=bar_positions, height=y, width=0.8, color="blue", alpha=0.8)
+    ax.errorbar(x=bar_positions, y=y, xerr=None, yerr=df["y uncertainty"], fmt="none", linestyle="none", color="grey", alpha=0.5)
+
+    ax.set_xticks(bar_positions)
+    ax.set_xticklabels(x)
 
     st.pyplot(fig)
 
